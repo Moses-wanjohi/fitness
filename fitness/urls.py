@@ -26,6 +26,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('api/progress/', include('progress_tracker.urls')),
     path('api/', include('fit_hub.urls')),
     path('api/nutrition/', include('nutrition.urls')),
     path('api/workouts/', include('workouts.urls')),
