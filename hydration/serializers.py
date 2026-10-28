@@ -2,7 +2,7 @@ from rest_framework import serializers
 from .models import WaterIntake
 
 class WaterIntakeSerializer(serializers.ModelSerializer):
-    user = serializers.ReadOnlyField(source='user.username')
     class Meta:
-        model = WaterIntake
+        model = WaterLog
         fields = '__all__'
+        read_only_fields = ['user', 'date']
