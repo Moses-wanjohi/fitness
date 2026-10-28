@@ -1,7 +1,7 @@
 from rest_framework import serializers
-from .models import WaterIntake
+from .models import WaterLog
 
-class WaterIntakeSerializer(serializers.ModelSerializer):
+class WaterLogSerializer(serializers.ModelSerializer):
     class Meta:
         model = WaterLog
         fields = '__all__'
