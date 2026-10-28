@@ -41,6 +41,11 @@ INSTALLED_APPS = [
     'fit_hub',
     'rest_framework',
     'corsheaders',
+    'nutrition',
+    'workouts',
+    'hydration',
+    'progress_tracker',
+    'dashboard',
 
 ]
 

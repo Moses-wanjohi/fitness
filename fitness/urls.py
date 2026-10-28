@@ -20,4 +20,9 @@ from django.urls import path, include
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('fit_hub.urls')),
+    path('api/nutrition/', include('nutrition.urls')),
+    path('api/workouts/', include('workouts.urls')),
+    path('api/hydration/', include('hydration.urls')),
+    path('api/progress/', include('progress_tracker.urls')),
+    path('api/dashboard/', include('dashboard.urls')),
 ]
