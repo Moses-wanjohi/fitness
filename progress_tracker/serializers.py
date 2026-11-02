@@ -1,8 +1,8 @@
 from rest_framework import serializers
-from .models import ProgressLog
+from .models import WeightLog
 
-class ProgressLogSerializer(serializers.ModelSerializer):
-    user = serializers.ReadOnlyField(source='user.username')
+class WeightLogSerializer(serializers.ModelSerializer):
     class Meta:
-        model = ProgressLog
-        fields = '__all__'
+        model = WeightLog
+        fields = ['id', 'weight_kg', 'date', 'notes']
+        read_only_fields = ['id', 'date', 'user']
