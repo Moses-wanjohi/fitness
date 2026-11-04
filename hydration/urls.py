@@ -1,6 +1,6 @@
 from django.urls import path, include
-from .views import WaterLogListCreateView
+from .views import HydrationListCreateView
 
 urlpatterns = [
-    path('', WaterLogListCreateView.as_view(), name='hydration-list-create'),
+    path('', HydrationListCreateView.as_view(), name='hydration-list'),
 ]
