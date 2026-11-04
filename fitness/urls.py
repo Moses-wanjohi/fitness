@@ -14,23 +14,27 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+
 from django.contrib import admin
 from django.urls import path, include
+from django.http import HttpResponse
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
 )
 
+def api_home(request):
+    return HttpResponse("FitHub API Backend is running successfully!")
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('', api_home),
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-    path('api/progress/', include('progress_tracker.urls')),
     path('api/', include('fit_hub.urls')),
     path('api/nutrition/', include('nutrition.urls')),
     path('api/workouts/', include('workouts.urls')),
     path('api/hydration/', include('hydration.urls')),
-    path('api/progress/', include('progress_tracker.urls')),
+    path('api/progress/', include('progress_tracker.urls')), 
     path('api/dashboard/', include('dashboard.urls')),
 ]
