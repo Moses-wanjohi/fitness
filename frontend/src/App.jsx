@@ -144,11 +144,6 @@ export default function App() {
       {/* 2. HERO SECTION */}
       <section className="relative pt-12 pb-20 md:pt-24 md:pb-32 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto text-center">
         
-        {/* TOP BADGE */}
-        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs sm:text-sm font-medium mb-8 animate-pulse">
-          <Sparkles className="w-4 h-4" />
-          <span>FitHub v2.0 is Live — Integrated All-in-One Tracker</span>
-        </div>
 
         {/* HEADLINE */}
         <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black tracking-tight leading-[1.15] max-w-4xl mx-auto">
