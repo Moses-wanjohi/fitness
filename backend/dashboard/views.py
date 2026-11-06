@@ -5,9 +5,9 @@ from rest_framework import status
 from django.db.models import Sum
 from datetime import date
 
-from nutrition.models import Meal, DailyGoal
-from workouts.models import Workout
-from hydration.models import WaterIntake
+from backend.nutrition.models import Meal, DailyGoal
+from backend.workouts.models import Workout
+from backend.hydration.models import WaterIntake
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
