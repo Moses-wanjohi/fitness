@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
+import DashboardOverview from './components/DashboardOverview'; 
 import Nutritions from './components/Nutritions';
 import Workouts from './components/Workouts';
 import Hydration from './components/Hydration';
 import ProgressTracker from './components/ProgressTracker';
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState('nutrition');
+  const [activeTab, setActiveTab] = useState('overview');
 
   const navItems = [
+    { id: 'overview', label: 'Dashboard' },
     { id: 'nutrition', label: 'Nutrition' },
     { id: 'workouts', label: 'Workouts' },
     { id: 'hydration', label: 'Hydration' },
@@ -44,6 +46,7 @@ export default function App() {
       {/* Main Content Area */}
       <main className="flex-1 overflow-y-auto bg-slate-950">
         <div className="max-w-6xl mx-auto py-8">
+          {activeTab === 'overview' && <DashboardOverview />}
           {activeTab === 'nutrition' && <Nutritions />}
           {activeTab === 'workouts' && <Workouts />}
           {activeTab === 'hydration' && <Hydration />}
