@@ -7,36 +7,48 @@ import ProgressTracker from './components/ProgressTracker';
 export default function App() {
   const [activeTab, setActiveTab] = useState('nutrition');
 
+  const navItems = [
+    { id: 'nutrition', label: 'Nutrition' },
+    { id: 'workouts', label: 'Workouts' },
+    { id: 'hydration', label: 'Hydration' },
+    { id: 'progress', label: 'Progress' },
+  ];
+
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans">
-      {/* Header / Navbar */}
-      <header className="border-b border-slate-800 bg-slate-900/50 sticky top-0 backdrop-blur-md z-10">
-        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-          <h1 className="text-2xl font-black tracking-wider text-emerald-400">FITHUB</h1>
-          <nav className="flex space-x-2">
-            {['nutrition', 'workouts', 'hydration', 'progress'].map((tab) => (
+    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans flex">
+      {/* Vertical Left Sidebar */}
+      <aside className="w-64 border-r border-slate-800 bg-slate-900/60 flex flex-col justify-between p-6 shrink-0">
+        <div>
+          <h1 className="text-2xl font-black tracking-wider text-emerald-400 mb-8">FITHUB</h1>
+          <nav className="space-y-2">
+            {navItems.map((tab) => (
               <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium capitalize transition ${
-                  activeTab === tab
-                    ? 'bg-emerald-600 text-white'
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`w-full text-left px-4 py-3 rounded-xl text-sm font-medium transition ${
+                  activeTab === tab.id
+                    ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/30'
                     : 'text-slate-400 hover:bg-slate-800 hover:text-white'
                 }`}
               >
-                {tab}
+                {tab.label}
               </button>
             ))}
           </nav>
         </div>
-      </header>
+        <div className="text-xs text-slate-500 pt-4 border-t border-slate-800">
+          FitHub Dashboard v1.0
+        </div>
+      </aside>
 
-      {/* Main View Container */}
-      <main className="py-6">
-        {activeTab === 'nutrition' && <Nutritions />}
-        {activeTab === 'workouts' && <Workouts />}
-        {activeTab === 'hydration' && <Hydration />}
-        {activeTab === 'progress' && <ProgressTracker />}
+      {/* Main Content Area */}
+      <main className="flex-1 overflow-y-auto bg-slate-950">
+        <div className="max-w-6xl mx-auto py-8">
+          {activeTab === 'nutrition' && <Nutritions />}
+          {activeTab === 'workouts' && <Workouts />}
+          {activeTab === 'hydration' && <Hydration />}
+          {activeTab === 'progress' && <ProgressTracker />}
+        </div>
       </main>
     </div>
   );
