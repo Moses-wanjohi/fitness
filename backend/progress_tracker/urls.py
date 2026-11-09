@@ -1,6 +1,10 @@
-from django.urls import path
-from .views import WeightLogListCreateView
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+from .views import ProgressViewSet
+
+router = DefaultRouter()
+router.register(r'', ProgressViewSet, basename='progress')
 
 urlpatterns = [
-    path('', WeightLogListCreateView.as_view(), name='weight-logs'),
+    path('', include(router.urls)),
 ]
