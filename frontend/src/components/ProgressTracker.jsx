@@ -1,15 +1,23 @@
 import React, { useState, useEffect } from 'react';
+import { apiRequest } from '../services/api';
 
 export default function ProgressTracker() {
   const [logs, setLogs] = useState([]);
   const [weight, setWeight] = useState('');
   const [notes, setNotes] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetch('http://127.0.0.1:8000/api/progress/')
-      .then((res) => res.json())
-      .then((data) => setLogs(data))
-      .catch((err) => console.error(err));
+    apiRequest('/progress/')
+      .then((data) => {
+        setLogs(Array.isArray(data) ? data : data.results || []);
+        setLoading(false);
+      })
+      .catch((err) => {
+        setError(err.message);
+        setLoading(false);
+      });
   }, []);
 
   const handleSubmit = (e) => {
@@ -20,17 +28,26 @@ export default function ProgressTracker() {
       date: new Date().toISOString().split('T')[0],
     };
 
-    fetch('http://127.0.0.1:8000/api/progress/', {
+    apiRequest('/progress/', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(entry),
     })
-      .then((res) => res.json())
       .then((data) => {
         setLogs([data, ...logs]);
         setWeight('');
         setNotes('');
-      });
+      })
+      .catch((err) => alert(err.message));
+  };
+
+  const handleDelete = (id) => {
+    apiRequest(`/progress/${id}/`, {
+      method: 'DELETE',
+    })
+      .then(() => {
+        setLogs(logs.filter((item) => item.id !== id));
+      })
+      .catch((err) => alert(err.message));
   };
 
   return (
@@ -76,7 +93,11 @@ export default function ProgressTracker() {
         {/* History List */}
         <div className="bg-slate-800 p-6 rounded-xl border border-slate-700 shadow lg:col-span-2">
           <h3 className="text-xl font-semibold mb-4 text-slate-200">Weight Log History</h3>
-          {logs.length === 0 ? (
+          {loading ? (
+            <p className="text-slate-400">Loading progress logs...</p>
+          ) : error ? (
+            <p className="text-red-400">Error: {error}</p>
+          ) : logs.length === 0 ? (
             <p className="text-slate-400">No weight entries logged yet.</p>
           ) : (
             <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2">
@@ -89,8 +110,19 @@ export default function ProgressTracker() {
                     <span className="text-xs text-slate-400">{item.date}</span>
                     <p className="text-sm text-slate-300 mt-0.5">{item.notes || 'No notes added.'}</p>
                   </div>
-                  <div className="text-right">
-                    <span className="text-2xl font-bold text-emerald-400">{item.weight} kg</span>
+                  <div className="flex items-center space-x-4">
+                    <div className="text-right">
+                      <span className="text-2xl font-bold text-emerald-400">{item.weight} kg</span>
+                    </div>
+                    <button
+                      onClick={() => handleDelete(item.id)}
+                      className="text-slate-500 hover:text-red-400 p-2 transition rounded-lg hover:bg-slate-800"
+                      title="Delete entry"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
                   </div>
                 </div>
               ))}
