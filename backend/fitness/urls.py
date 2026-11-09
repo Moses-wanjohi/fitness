@@ -16,17 +16,23 @@ Including another URLconf
 """
 
 from django.contrib import admin
+from rest_framework.routers import DefaultRouter
 from django.urls import path, include
 from django.http import HttpResponse
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
 )
+from progress_tracker.views import ProgressViewSet
+
 
 def api_home(request):
     return HttpResponse("FitHub API Backend is running successfully!")
+router = DefaultRouter()
+router.register(r'progress', ProgressViewSet, basename='progress')
 
 urlpatterns = [
+    path('api/', include(router.urls)),
     path('admin/', admin.site.urls),
     path('', api_home),
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
