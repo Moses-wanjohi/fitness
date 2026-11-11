@@ -14,6 +14,7 @@ export default function App() {
     { id: 'workouts', label: 'Workouts' },
     { id: 'hydration', label: 'Hydration' },
     { id: 'progress', label: 'Progress' },
+    { id: 'Profile', labed: 'Profile' },
   ];
 
   return (
@@ -51,6 +52,7 @@ export default function App() {
           {activeTab === 'workouts' && <Workouts />}
           {activeTab === 'hydration' && <Hydration />}
           {activeTab === 'progress' && <ProgressTracker />}
+          {activeTab === 'profile' && <Profile />}
         </div>
       </main>
     </div>
