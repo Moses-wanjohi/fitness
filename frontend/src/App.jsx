@@ -4,6 +4,7 @@ import Nutritions from './components/Nutritions';
 import Workouts from './components/Workouts';
 import Hydration from './components/Hydration';
 import ProgressTracker from './components/ProgressTracker';
+import Profile from './components/profile';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('overview');
@@ -14,7 +15,7 @@ export default function App() {
     { id: 'workouts', label: 'Workouts' },
     { id: 'hydration', label: 'Hydration' },
     { id: 'progress', label: 'Progress' },
-    { id: 'Profile', labed: 'Profile' },
+    { id: 'profile', labed: 'Profile' },
   ];
 
   return (
