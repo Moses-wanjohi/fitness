@@ -12,7 +12,15 @@ export default function Workouts() {
   const [caloriesBurned, setCaloriesBurned] = useState('');
 
   useEffect(() => {
-    fetch('http://127.0.0.1:8000/api/workouts/')
+    // 1. Get the JWT token from localStorage
+    const token = localStorage.getItem('access');
+
+    fetch('http://127.0.0.1:8000/api/workouts/', {
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}` // 2. Add Authorization header for GET
+      }
+    })
       .then((res) => {
         if (!res.ok) throw new Error('Failed to fetch workouts');
         return res.json();
@@ -29,6 +37,9 @@ export default function Workouts() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    // 3. Get token for POST request as well
+    const token = localStorage.getItem('access');
+    
     const newWorkout = {
       title,
       category,
@@ -38,7 +49,10 @@ export default function Workouts() {
 
     fetch('http://127.0.0.1:8000/api/workouts/', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}` // 4. Add Authorization header for POST
+      },
       body: JSON.stringify(newWorkout),
     })
       .then((res) => {
