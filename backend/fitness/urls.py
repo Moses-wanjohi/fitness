@@ -27,6 +27,7 @@ from progress_tracker.views import ProgressViewSet
 from workouts.views import WorkoutViewSet
 
 
+
 def api_home(request):
     return HttpResponse("FitHub API Backend is running successfully!")
 router = DefaultRouter()
