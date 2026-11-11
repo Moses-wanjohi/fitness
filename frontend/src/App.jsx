@@ -15,7 +15,7 @@ export default function App() {
     { id: 'workouts', label: 'Workouts' },
     { id: 'hydration', label: 'Hydration' },
     { id: 'progress', label: 'Progress' },
-    { id: 'profile', labed: 'Profile' },
+    { id: 'profile', label: 'Profile' },
   ];
 
   return (
