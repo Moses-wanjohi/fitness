@@ -19,7 +19,6 @@ export async function apiRequest(endpoint, options = {}) {
     localStorage.removeItem('access_token');
     localStorage.removeItem('access');
     localStorage.removeItem('refresh_token');
-    window.location.reload();
     throw new Error('Session expired. Please log in again.');
   }
 
