@@ -24,12 +24,14 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
 )
 from progress_tracker.views import ProgressViewSet
+from workouts.views import WorkoutViewSet
 
 
 def api_home(request):
     return HttpResponse("FitHub API Backend is running successfully!")
 router = DefaultRouter()
 router.register(r'progress', ProgressViewSet, basename='progress')
+router.register(r'workouts', WorkoutViewSet, basename='workouts')
 
 urlpatterns = [
     path('api/', include(router.urls)),
