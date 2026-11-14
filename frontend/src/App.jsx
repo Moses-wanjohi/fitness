@@ -5,6 +5,7 @@ import Workouts from './components/Workouts';
 import Hydration from './components/Hydration';
 import ProgressTracker from './components/ProgressTracker';
 import Profile from './components/profile';
+import LandingPage from './pages/LandingPage';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('overview');
