@@ -6,7 +6,7 @@ import Workouts from './components/Workouts';
 import Hydration from './components/Hydration';
 import ProgressTracker from './components/ProgressTracker';
 import Profile from './components/profile';
-import LandingPage from './pages/LandingPage';
+import LandingPage from './components/LandingPage';
 
 // 1. Your existing sidebar & dashboard view moved into its own component
 function DashboardLayout() {
