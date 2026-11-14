@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import DashboardOverview from './components/DashboardOverview'; 
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import DashboardOverview from './components/DashboardOverview';
 import Nutritions from './components/Nutritions';
 import Workouts from './components/Workouts';
 import Hydration from './components/Hydration';
@@ -7,7 +8,8 @@ import ProgressTracker from './components/ProgressTracker';
 import Profile from './components/profile';
 import LandingPage from './pages/LandingPage';
 
-export default function App() {
+// 1. Your existing sidebar & dashboard view moved into its own component
+function DashboardLayout() {
   const [activeTab, setActiveTab] = useState('overview');
 
   const navItems = [
@@ -58,5 +60,25 @@ export default function App() {
         </div>
       </main>
     </div>
+  );
+}
+
+// 2. Main App component handling the routes
+export default function App() {
+  const isAuthenticated = Boolean(localStorage.getItem('access_token'));
+
+  return (
+    <BrowserRouter>
+      <Routes>
+        {/* Visiting localhost:5173/ shows LandingPage (unless already logged in) */}
+        <Route
+          path="/"
+          element={isAuthenticated ? <Navigate to="/dashboard" /> : <LandingPage />}
+        />
+        
+        {/* Visiting localhost:5173/dashboard shows your sidebar & tabs */}
+        <Route path="/dashboard" element={<DashboardLayout />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
