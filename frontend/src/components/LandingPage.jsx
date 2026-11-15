@@ -187,7 +187,7 @@ const LandingPage = () => {
 
       {/* Footer */}
       <footer className="border-t border-slate-800/80 py-8 text-center text-sm text-slate-500">
-        <p>FitHub Dashboard v1.0 • Built for consistent progress.</p>
+        <p>FitHub Dashboard  • Built for consistent progress.</p>
       </footer>
     </div>
   );
