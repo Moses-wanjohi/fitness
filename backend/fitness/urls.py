@@ -42,4 +42,5 @@ urlpatterns = [
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('api/', include('fit_hub.urls')),
     path('api/dashboard/', include('dashboard.urls')),
+    path('api/', include('register.urls')),
 ]
