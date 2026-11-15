@@ -25,6 +25,7 @@ export default function Login() {
         // Save the token so App.jsx recognizes the user is logged in
         localStorage.setItem('access_token', data.access);
         if (data.refresh) localStorage.setItem('refresh_token', data.refresh);
+        localStorage.setItem('username', username);
         navigate('/dashboard');
       } else {
         setError(data.detail || 'Invalid username or password.');
