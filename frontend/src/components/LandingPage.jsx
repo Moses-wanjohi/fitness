@@ -10,9 +10,6 @@ const LandingPage = () => {
           <span className="text-2xl font-extrabold tracking-wider text-emerald-400">
             FITHUB
           </span>
-          <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-        
-          </span>
         </div>
 
         <div className="flex items-center gap-4">
