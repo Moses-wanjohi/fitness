@@ -9,6 +9,7 @@ import Profile from './components/profile';
 import LandingPage from './components/LandingPage';
 import Login from './components/Login';
 import Register from './components/Register';
+import Onboarding from './components/Onboarding';
 
 // 1. Your existing sidebar & dashboard view moved into its own component
 function DashboardLayout() {
