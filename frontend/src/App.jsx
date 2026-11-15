@@ -78,7 +78,7 @@ export default function App() {
           element={isAuthenticated ? <Navigate to="/dashboard" /> : <LandingPage />}
         />
         
-        {/* Visiting localhost:5173/dashboard shows your sidebar & tabs */}
+        <Route path="/login" element={<Login />} />
         <Route path="/dashboard" element={<DashboardLayout />} />
       </Routes>
     </BrowserRouter>
