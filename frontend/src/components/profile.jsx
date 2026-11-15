@@ -12,33 +12,40 @@ export default function Profile() {
   });
   const [stats, setStats] = useState({ food_entries: 0, activities: 0 });
   const [loading, setLoading] = useState(true);
+  
+  // Edit mode state
+  const [isEditing, setIsEditing] = useState(false);
+  const [editForm, setEditForm] = useState({ ...profile });
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState('');
 
   useEffect(() => {
-    // 1. Load onboarding data from localStorage if available
+    // 1. Load onboarding/profile data from localStorage if available
     const savedOnboarding = localStorage.getItem('fithub_profile');
     if (savedOnboarding) {
       try {
         const parsed = JSON.parse(savedOnboarding);
-        // Map onboarding goal ids to friendly text labels
         const goalMap = {
           lose: 'Lose Weight',
           maintain: 'Maintain Fitness',
           gain: 'Build Muscle',
         };
 
-        setProfile((prev) => ({
-          ...prev,
-          age: parsed.age || prev.age,
-          weight: parsed.weight || prev.weight,
-          height: parsed.height || prev.height,
-          goal: goalMap[parsed.goal] || parsed.goal || prev.goal,
-        }));
+        const updated = {
+          age: parsed.age || profile.age,
+          weight: parsed.weight || profile.weight,
+          height: parsed.height || profile.height,
+          goal: goalMap[parsed.goal] || parsed.goal || profile.goal,
+        };
+
+        setProfile((prev) => ({ ...prev, ...updated }));
+        setEditForm((prev) => ({ ...prev, ...updated }));
       } catch (e) {
         console.error('Failed to parse onboarding data');
       }
     }
 
-    // 2. Fetch profile and stats data from backend if available
+    // 2. Fetch profile data from backend if available
     const token = localStorage.getItem('access_token');
     fetch('http://127.0.0.1:8000/api/dashboard/profile/', {
       headers: {
@@ -49,6 +56,7 @@ export default function Profile() {
       .then((backendData) => {
         if (backendData) {
           setProfile((prev) => ({ ...prev, ...backendData }));
+          setEditForm((prev) => ({ ...prev, ...backendData }));
         }
         setLoading(false);
       })
@@ -56,6 +64,40 @@ export default function Profile() {
         setLoading(false);
       });
   }, []);
+
+  const handleSave = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    setMessage('');
+
+    // 1. Update local state & localStorage immediately
+    setProfile(editForm);
+    localStorage.setItem('fithub_profile', JSON.stringify(editForm));
+
+    try {
+      const token = localStorage.getItem('access_token');
+      const response = await fetch('http://127.0.0.1:8000/api/dashboard/profile/', {
+        method: 'PUT', // or PATCH depending on your backend
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+        body: JSON.stringify(editForm),
+      });
+
+      if (response.ok) {
+        setMessage('Profile updated successfully!');
+      } else {
+        setMessage('Saved locally (Backend sync pending).');
+      }
+    } catch (err) {
+      setMessage('Saved locally (Offline mode).');
+    } finally {
+      setSaving(false);
+      setIsEditing(false);
+      setTimeout(() => setMessage(''), 4000);
+    }
+  };
 
   const handleLogout = () => {
     localStorage.removeItem('access_token');
@@ -71,10 +113,16 @@ export default function Profile() {
   return (
     <div className="p-6 max-w-6xl mx-auto text-slate-100">
       <h2 className="text-3xl font-bold mb-1 text-emerald-400">Profile</h2>
-      <p className="text-sm text-slate-400 mb-8">Manage your settings and personal details</p>
+      <p className="text-sm text-slate-400 mb-6">Manage your settings and personal details</p>
+
+      {message && (
+        <div className="mb-6 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-sm p-4 rounded-xl">
+          {message}
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Left Column: User Profile Cards */}
+        {/* Left Column: User Profile Cards / Edit Form */}
         <div className="lg:col-span-2 space-y-4">
           <div className="bg-slate-800 p-6 rounded-xl border border-slate-700 shadow flex items-center justify-between">
             <div className="flex items-center space-x-4">
@@ -88,32 +136,107 @@ export default function Profile() {
             </div>
           </div>
 
-          <div className="bg-slate-800 p-4 rounded-xl border border-slate-700 shadow flex justify-between items-center">
-            <span className="text-sm text-slate-400">Age</span>
-            <span className="text-base font-semibold text-white">{profile.age} years</span>
-          </div>
+          {!isEditing ? (
+            <>
+              <div className="bg-slate-800 p-4 rounded-xl border border-slate-700 shadow flex justify-between items-center">
+                <span className="text-sm text-slate-400">Age</span>
+                <span className="text-base font-semibold text-white">{profile.age} years</span>
+              </div>
 
-          <div className="bg-slate-800 p-4 rounded-xl border border-slate-700 shadow flex justify-between items-center">
-            <span className="text-sm text-slate-400">Weight</span>
-            <span className="text-base font-semibold text-emerald-400">{profile.weight} kg</span>
-          </div>
+              <div className="bg-slate-800 p-4 rounded-xl border border-slate-700 shadow flex justify-between items-center">
+                <span className="text-sm text-slate-400">Weight</span>
+                <span className="text-base font-semibold text-emerald-400">{profile.weight} kg</span>
+              </div>
 
-          <div className="bg-slate-800 p-4 rounded-xl border border-slate-700 shadow flex justify-between items-center">
-            <span className="text-sm text-slate-400">Height</span>
-            <span className="text-base font-semibold text-white">{profile.height} cm</span>
-          </div>
+              <div className="bg-slate-800 p-4 rounded-xl border border-slate-700 shadow flex justify-between items-center">
+                <span className="text-sm text-slate-400">Height</span>
+                <span className="text-base font-semibold text-white">{profile.height} cm</span>
+              </div>
 
-          <div className="bg-slate-800 p-4 rounded-xl border border-slate-700 shadow flex justify-between items-center">
-            <span className="text-sm text-slate-400">Goal</span>
-            <span className="text-base font-semibold text-orange-400">{profile.goal}</span>
-          </div>
+              <div className="bg-slate-800 p-4 rounded-xl border border-slate-700 shadow flex justify-between items-center">
+                <span className="text-sm text-slate-400">Goal</span>
+                <span className="text-base font-semibold text-orange-400">{profile.goal}</span>
+              </div>
 
-          <button
-            onClick={() => alert('Edit profile feature coming soon!')}
-            className="w-full bg-slate-700 hover:bg-slate-600 text-white font-semibold py-3 rounded-xl transition border border-slate-600"
-          >
-            Edit Profile
-          </button>
+              <button
+                onClick={() => setIsEditing(true)}
+                className="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold py-3 rounded-xl transition shadow-lg shadow-emerald-500/20"
+              >
+                Edit Profile
+              </button>
+            </>
+          ) : (
+            <form onSubmit={handleSave} className="bg-slate-800 p-6 rounded-xl border border-slate-700 shadow space-y-4">
+              <h3 className="text-lg font-semibold text-white mb-2">Edit Your Details</h3>
+
+              <div>
+                <label className="block text-sm text-slate-300 mb-1">Age (years)</label>
+                <input
+                  type="number"
+                  value={editForm.age}
+                  onChange={(e) => setEditForm({ ...editForm, age: e.target.value })}
+                  className="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-emerald-500"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm text-slate-300 mb-1">Weight (kg)</label>
+                <input
+                  type="number"
+                  step="0.1"
+                  value={editForm.weight}
+                  onChange={(e) => setEditForm({ ...editForm, weight: e.target.value })}
+                  className="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-emerald-500"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm text-slate-300 mb-1">Height (cm)</label>
+                <input
+                  type="number"
+                  value={editForm.height}
+                  onChange={(e) => setEditForm({ ...editForm, height: e.target.value })}
+                  className="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-emerald-500"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm text-slate-300 mb-1">Goal</label>
+                <select
+                  value={editForm.goal}
+                  onChange={(e) => setEditForm({ ...editForm, goal: e.target.value })}
+                  className="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-emerald-500"
+                >
+                  <option value="Lose Weight">Lose Weight</option>
+                  <option value="Maintain Fitness">Maintain Fitness</option>
+                  <option value="Build Muscle">Build Muscle</option>
+                </select>
+              </div>
+
+              <div className="flex space-x-3 pt-2">
+                <button
+                  type="submit"
+                  disabled={saving}
+                  className="flex-1 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold py-2.5 rounded-lg transition"
+                >
+                  {saving ? 'Saving...' : 'Save Changes'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsEditing(false);
+                    setEditForm(profile);
+                  }}
+                  className="flex-1 bg-slate-700 hover:bg-slate-600 text-white font-semibold py-2.5 rounded-lg transition"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          )}
         </div>
 
         {/* Right Column: Stats & Logout */}
