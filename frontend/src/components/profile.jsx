@@ -1,25 +1,44 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+
+function getUsernameFromToken() {
+  try {
+    const token = localStorage.getItem('access_token');
+    if (!token) return null;
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    return payload.username || payload.user || null;
+  } catch {
+    return null;
+  }
+}
 
 export default function Profile() {
+  const initialUsername =
+    localStorage.getItem('username') || getUsernameFromToken() || 'Fitness User';
+
   const [profile, setProfile] = useState({
-    username: 'Fitness User',
+    username: initialUsername,
     email: 'user@fithub.com',
     member_since: '2026-11-15',
     age: 25,
     weight: 74.2,
     height: 175,
     goal: 'Maintain Fitness',
+    avatar: '',
   });
   const [stats, setStats] = useState({ food_entries: 0, activities: 0 });
   const [loading, setLoading] = useState(true);
-  
+
   // Edit mode state
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState({ ...profile });
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
+    const storedUsername =
+      localStorage.getItem('username') || getUsernameFromToken();
+
     // 1. Load onboarding/profile data from localStorage if available
     const savedOnboarding = localStorage.getItem('fithub_profile');
     if (savedOnboarding) {
@@ -32,10 +51,12 @@ export default function Profile() {
         };
 
         const updated = {
+          username: parsed.username || storedUsername || profile.username,
           age: parsed.age || profile.age,
           weight: parsed.weight || profile.weight,
           height: parsed.height || profile.height,
           goal: goalMap[parsed.goal] || parsed.goal || profile.goal,
+          avatar: parsed.avatar || profile.avatar,
         };
 
         setProfile((prev) => ({ ...prev, ...updated }));
@@ -43,6 +64,9 @@ export default function Profile() {
       } catch (e) {
         console.error('Failed to parse onboarding data');
       }
+    } else if (storedUsername) {
+      setProfile((prev) => ({ ...prev, username: storedUsername }));
+      setEditForm((prev) => ({ ...prev, username: storedUsername }));
     }
 
     // 2. Fetch profile data from backend if available
@@ -55,8 +79,16 @@ export default function Profile() {
       .then((res) => (res.ok ? res.json() : null))
       .then((backendData) => {
         if (backendData) {
-          setProfile((prev) => ({ ...prev, ...backendData }));
-          setEditForm((prev) => ({ ...prev, ...backendData }));
+          setProfile((prev) => ({
+            ...prev,
+            ...backendData,
+            username: backendData.username || prev.username,
+          }));
+          setEditForm((prev) => ({
+            ...prev,
+            ...backendData,
+            username: backendData.username || prev.username,
+          }));
         }
         setLoading(false);
       })
@@ -64,6 +96,32 @@ export default function Profile() {
         setLoading(false);
       });
   }, []);
+
+  // Handle profile picture selection and convert to Base64 for instant preview & storage
+  const handleImageChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      setMessage('Please select a valid image file.');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64Image = reader.result;
+
+      setProfile((prev) => {
+        const next = { ...prev, avatar: base64Image };
+        localStorage.setItem('fithub_profile', JSON.stringify(next));
+        return next;
+      });
+      setEditForm((prev) => ({ ...prev, avatar: base64Image }));
+      setMessage('Profile picture updated!');
+      setTimeout(() => setMessage(''), 3000);
+    };
+    reader.readAsDataURL(file);
+  };
 
   const handleSave = async (e) => {
     e.preventDefault();
@@ -73,11 +131,14 @@ export default function Profile() {
     // 1. Update local state & localStorage immediately
     setProfile(editForm);
     localStorage.setItem('fithub_profile', JSON.stringify(editForm));
+    if (editForm.username) {
+      localStorage.setItem('username', editForm.username);
+    }
 
     try {
       const token = localStorage.getItem('access_token');
       const response = await fetch('http://127.0.0.1:8000/api/dashboard/profile/', {
-        method: 'PUT', // or PATCH depending on your backend
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           ...(token && { Authorization: `Bearer ${token}` }),
@@ -103,6 +164,7 @@ export default function Profile() {
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
     localStorage.removeItem('fithub_profile');
+    localStorage.removeItem('username');
     window.location.href = '/';
   };
 
@@ -126,18 +188,59 @@ export default function Profile() {
         <div className="lg:col-span-2 space-y-4">
           <div className="bg-slate-800 p-6 rounded-xl border border-slate-700 shadow flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <div className="w-14 h-14 bg-emerald-500/20 border border-emerald-500 text-emerald-400 rounded-full flex items-center justify-center text-xl font-bold">
-                {profile.username ? profile.username.charAt(0).toUpperCase() : 'U'}
+              {/* Clickable Profile Picture / Initials Avatar */}
+              <div
+                onClick={() => fileInputRef.current?.click()}
+                title="Click to change profile picture"
+                className="relative group w-16 h-16 rounded-full cursor-pointer shrink-0 overflow-hidden border-2 border-emerald-500 bg-emerald-500/20 flex items-center justify-center"
+              >
+                {profile.avatar ? (
+                  <img
+                    src={profile.avatar}
+                    alt={profile.username}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <span className="text-2xl font-bold text-emerald-400">
+                    {profile.username ? profile.username.charAt(0).toUpperCase() : 'U'}
+                  </span>
+                )}
+
+                {/* Hover Overlay */}
+                <div className="absolute inset-0 bg-slate-950/70 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-[11px] font-semibold text-white">
+                  Change
+                </div>
               </div>
+
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+                className="hidden"
+              />
+
               <div>
                 <h3 className="text-lg font-semibold text-white">{profile.username}</h3>
                 <p className="text-xs text-slate-400">Member since {profile.member_since}</p>
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="mt-1.5 text-xs font-medium text-emerald-400 hover:underline"
+                >
+                  {profile.avatar ? 'Change photo' : 'Upload photo'}
+                </button>
               </div>
             </div>
           </div>
 
           {!isEditing ? (
             <>
+              <div className="bg-slate-800 p-4 rounded-xl border border-slate-700 shadow flex justify-between items-center">
+                <span className="text-sm text-slate-400">Username</span>
+                <span className="text-base font-semibold text-white">{profile.username}</span>
+              </div>
+
               <div className="bg-slate-800 p-4 rounded-xl border border-slate-700 shadow flex justify-between items-center">
                 <span className="text-sm text-slate-400">Age</span>
                 <span className="text-base font-semibold text-white">{profile.age} years</span>
@@ -168,6 +271,39 @@ export default function Profile() {
           ) : (
             <form onSubmit={handleSave} className="bg-slate-800 p-6 rounded-xl border border-slate-700 shadow space-y-4">
               <h3 className="text-lg font-semibold text-white mb-2">Edit Your Details</h3>
+
+              <div>
+                <label className="block text-sm text-slate-300 mb-1">Display Name / Username</label>
+                <input
+                  type="text"
+                  value={editForm.username}
+                  onChange={(e) => setEditForm({ ...editForm, username: e.target.value })}
+                  className="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-emerald-500"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm text-slate-300 mb-1">Profile Picture</label>
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="px-4 py-2 bg-slate-900 hover:bg-slate-700 border border-slate-700 rounded-lg text-sm text-slate-200 transition"
+                  >
+                    Choose Image...
+                  </button>
+                  {editForm.avatar && (
+                    <button
+                      type="button"
+                      onClick={() => setEditForm({ ...editForm, avatar: '' })}
+                      className="text-xs text-red-400 hover:underline"
+                    >
+                      Remove photo
+                    </button>
+                  )}
+                </div>
+              </div>
 
               <div>
                 <label className="block text-sm text-slate-300 mb-1">Age (years)</label>
