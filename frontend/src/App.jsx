@@ -78,6 +78,7 @@ export default function App() {
           path="/"
           element={isAuthenticated ? <Navigate to="/dashboard" /> : <LandingPage />}
         />
+        <Route path="/onboarding" element={<Onboarding />} />
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
         <Route path="/dashboard" element={<DashboardLayout />} />
