@@ -6,14 +6,15 @@ export default function Register() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleRegister = async (e) => {
     e.preventDefault();
     setError('');
+    setLoading(true);
 
     try {
-      // Adjust this URL if your Django register endpoint is named differently (e.g., /api/register/)
       const response = await fetch('http://127.0.0.1:8000/api/register/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -21,13 +22,29 @@ export default function Register() {
       });
 
       if (response.ok) {
-        navigate('/login');
+        // Automatically log the new user in so they have an access_token during onboarding
+        const tokenRes = await fetch('http://127.0.0.1:8000/api/token/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password }),
+        });
+
+        if (tokenRes.ok) {
+          const tokenData = await tokenRes.json();
+          localStorage.setItem('access_token', tokenData.access);
+          if (tokenData.refresh) localStorage.setItem('refresh_token', tokenData.refresh);
+          navigate('/onboarding');
+        } else {
+          navigate('/login');
+        }
       } else {
         const data = await response.json();
         setError(data.username || data.email || 'Registration failed. Please try again.');
       }
     } catch (err) {
       setError('Failed to connect to the backend server.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -82,9 +99,10 @@ export default function Register() {
 
             <button
               type="submit"
-              className="w-full py-3 px-4 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-xl transition shadow-lg shadow-emerald-500/20"
+              disabled={loading}
+              className="w-full py-3 px-4 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-xl transition shadow-lg shadow-emerald-500/20 disabled:opacity-50"
             >
-              Sign up
+              {loading ? 'Creating account...' : 'Sign up'}
             </button>
           </form>
 
