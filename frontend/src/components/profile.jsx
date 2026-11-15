@@ -1,32 +1,54 @@
 import React, { useState, useEffect } from 'react';
-import { apiRequest } from '../services/api';
 
 export default function Profile() {
   const [profile, setProfile] = useState({
     username: 'Fitness User',
     email: 'user@fithub.com',
-    member_since: '2026-01-28',
-    age: 30,
-    weight: 72,
-    height: 178,
-    goal: 'Maintain Weight',
+    member_since: '2026-11-15',
+    age: 25,
+    weight: 74.2,
+    height: 175,
+    goal: 'Maintain Fitness',
   });
   const [stats, setStats] = useState({ food_entries: 0, activities: 0 });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Fetch profile and stats data if your backend has endpoints for them
-    Promise.all([
-      apiRequest('/profile/').catch(() => null),
-      apiRequest('/dashboard/').catch(() => null),
-    ])
-      .then(([profileData, dashboardData]) => {
-        if (profileData) setProfile((prev) => ({ ...prev, ...profileData }));
-        if (dashboardData) {
-          setStats({
-            food_entries: dashboardData.food_entries_count || 7,
-            activities: dashboardData.workouts_count || 4,
-          });
+    // 1. Load onboarding data from localStorage if available
+    const savedOnboarding = localStorage.getItem('fithub_profile');
+    if (savedOnboarding) {
+      try {
+        const parsed = JSON.parse(savedOnboarding);
+        // Map onboarding goal ids to friendly text labels
+        const goalMap = {
+          lose: 'Lose Weight',
+          maintain: 'Maintain Fitness',
+          gain: 'Build Muscle',
+        };
+
+        setProfile((prev) => ({
+          ...prev,
+          age: parsed.age || prev.age,
+          weight: parsed.weight || prev.weight,
+          height: parsed.height || prev.height,
+          goal: goalMap[parsed.goal] || parsed.goal || prev.goal,
+        }));
+      } catch (e) {
+        console.error('Failed to parse onboarding data');
+      }
+    }
+
+    // 2. Fetch profile and stats data from backend if available
+    const token = localStorage.getItem('access_token');
+    fetch('http://127.0.0.1:8000/api/dashboard/profile/', {
+      headers: {
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+    })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((backendData) => {
+        if (backendData) {
+          setProfile((prev) => ({ ...prev, ...backendData }));
         }
         setLoading(false);
       })
@@ -36,10 +58,10 @@ export default function Profile() {
   }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem('access');
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
-    window.location.href = '/login'; // Or reload to trigger auth guard
+    localStorage.removeItem('fithub_profile');
+    window.location.href = '/';
   };
 
   if (loading) {
