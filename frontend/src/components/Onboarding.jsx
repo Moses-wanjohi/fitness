@@ -37,11 +37,13 @@ export default function Onboarding() {
     setLoading(true);
     setError('');
 
+    // 1. Always save locally immediately so frontend components can read it instantly
+    localStorage.setItem('fithub_profile', JSON.stringify(formData));
+
     try {
       const token = localStorage.getItem('access_token');
-      // Adjust endpoint to match your Django profile/onboarding endpoint
       const response = await fetch('http://127.0.0.1:8000/api/dashboard/profile/', {
-        method: 'POST', // or PATCH/PUT depending on your view
+        method: 'POST', // or PUT/PATCH depending on your backend view
         headers: {
           'Content-Type': 'application/json',
           ...(token && { Authorization: `Bearer ${token}` }),
@@ -52,12 +54,9 @@ export default function Onboarding() {
       if (response.ok) {
         navigate('/dashboard');
       } else {
-        // Save locally as a fallback so the user can proceed to the dashboard
-        localStorage.setItem('fithub_profile', JSON.stringify(formData));
         navigate('/dashboard');
       }
     } catch (err) {
-      localStorage.setItem('fithub_profile', JSON.stringify(formData));
       navigate('/dashboard');
     } finally {
       setLoading(false);
