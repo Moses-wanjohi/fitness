@@ -33,6 +33,7 @@ export default function Register() {
           const tokenData = await tokenRes.json();
           localStorage.setItem('access_token', tokenData.access);
           if (tokenData.refresh) localStorage.setItem('refresh_token', tokenData.refresh);
+          localStorage.setItem('username', username);
           navigate('/onboarding');
         } else {
           navigate('/login');
