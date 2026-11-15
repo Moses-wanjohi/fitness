@@ -11,7 +11,7 @@ const LandingPage = () => {
             FITHUB
           </span>
           <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-            v1.0
+        
           </span>
         </div>
 
