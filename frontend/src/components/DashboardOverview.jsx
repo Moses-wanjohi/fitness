@@ -101,7 +101,7 @@ export default function DashboardOverview() {
           <h2 className="text-3xl font-bold text-emerald-400">Welcome back, {username}!</h2>
           <p className="text-slate-400 text-sm mt-1">Here is a live summary of your fitness progress.</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Link
             to="/workouts"
             className="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-xl text-xs transition shadow"
@@ -113,6 +113,12 @@ export default function DashboardOverview() {
             className="px-4 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 font-semibold rounded-xl text-xs transition"
           >
             + Log Meal
+          </Link>
+          <Link
+            to="/hydration"
+            className="px-4 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-cyan-400 font-semibold rounded-xl text-xs transition"
+          >
+            💧 Hydration
           </Link>
         </div>
       </div>
@@ -151,14 +157,14 @@ export default function DashboardOverview() {
         <div className="bg-slate-800 p-6 rounded-xl border border-slate-700 shadow">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-lg font-semibold text-slate-200">Recent Workouts</h3>
-            <Link to="/dashboard/workouts" className="text-xs text-emerald-400 hover:underline">
+            <Link to="/workouts" className="text-xs text-emerald-400 hover:underline">
               View all →
             </Link>
           </div>
           {workouts.length === 0 ? (
             <div className="text-center py-8 text-slate-400 text-sm">
               <p>No workouts recorded yet.</p>
-              <Link to="/dashboard/workouts" className="mt-2 inline-block text-xs text-emerald-400 font-semibold hover:underline">
+              <Link to="/workouts" className="mt-2 inline-block text-xs text-emerald-400 font-semibold hover:underline">
                 Log your first workout
               </Link>
             </div>
@@ -186,14 +192,14 @@ export default function DashboardOverview() {
         <div className="bg-slate-800 p-6 rounded-xl border border-slate-700 shadow">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-lg font-semibold text-slate-200">Recent Nutrition Logs</h3>
-            <Link to="/dashboard/nutrition" className="text-xs text-emerald-400 hover:underline">
+            <Link to="/nutrition" className="text-xs text-emerald-400 hover:underline">
               View all →
             </Link>
           </div>
           {nutrition.length === 0 ? (
             <div className="text-center py-8 text-slate-400 text-sm">
               <p>No meals logged yet.</p>
-              <Link to="/dashboard/nutrition" className="mt-2 inline-block text-xs text-emerald-400 font-semibold hover:underline">
+              <Link to="/nutrition" className="mt-2 inline-block text-xs text-emerald-400 font-semibold hover:underline">
                 Log your first meal
               </Link>
             </div>
