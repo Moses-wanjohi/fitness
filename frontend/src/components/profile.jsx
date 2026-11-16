@@ -296,7 +296,14 @@ export default function Profile() {
                   {editForm.avatar && (
                     <button
                       type="button"
-                      onClick={() => setEditForm({ ...editForm, avatar: '' })}
+                      onClick={() => {
+                        const updated = { ...editForm, avatar: '' };
+                        setEditForm(updated);
+                        setProfile(updated);
+                        localStorage.setItem('fithub_profile', JSON.stringify(updated));
+                        setMessage('Profile picture removed!');
+                        setTimeout(() => setMessage(''), 3000);
+                      }}
                       className="text-xs text-red-400 hover:underline"
                     >
                       Remove photo
