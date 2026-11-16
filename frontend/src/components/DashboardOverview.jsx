@@ -103,7 +103,7 @@ export default function DashboardOverview() {
         </div>
         <div className="flex gap-2">
           <Link
-            to="/dashboard/workouts"
+            to="/workouts"
             className="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-xl text-xs transition shadow"
           >
             + Log Workout
