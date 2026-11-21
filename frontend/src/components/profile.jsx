@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
+
 function getUsernameFromToken() {
   try {
     const token = localStorage.getItem('access_token');
@@ -9,6 +11,31 @@ function getUsernameFromToken() {
   } catch {
     return null;
   }
+}
+
+function getLocalStatsCounts() {
+  let foodCount = 0;
+  let activityCount = 0;
+
+  try {
+    const nutritionData = JSON.parse(localStorage.getItem('fithub_nutrition_logs') || '[]');
+    if (Array.isArray(nutritionData)) {
+      foodCount = nutritionData.length;
+    }
+  } catch {
+    foodCount = 0;
+  }
+
+  try {
+    const workoutData = JSON.parse(localStorage.getItem('fithub_workouts') || '[]');
+    if (Array.isArray(workoutData)) {
+      activityCount = workoutData.length;
+    }
+  } catch {
+    activityCount = 0;
+  }
+
+  return { food_entries: foodCount, activities: activityCount };
 }
 
 export default function Profile() {
@@ -25,10 +52,9 @@ export default function Profile() {
     goal: 'Maintain Fitness',
     avatar: '',
   });
-  const [stats, setStats] = useState({ food_entries: 0, activities: 0 });
+  const [stats, setStats] = useState(() => getLocalStatsCounts());
   const [loading, setLoading] = useState(true);
 
-  // Edit mode state
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState({ ...profile });
   const [saving, setSaving] = useState(false);
@@ -39,7 +65,11 @@ export default function Profile() {
     const storedUsername =
       localStorage.getItem('username') || getUsernameFromToken();
 
-    // 1. Load onboarding/profile data from localStorage if available
+    // Always read latest counts from fithub_nutrition_logs and fithub_workouts
+    const localCounts = getLocalStatsCounts();
+    setStats(localCounts);
+
+    // Load profile data from fithub_profile
     const savedOnboarding = localStorage.getItem('fithub_profile');
     if (savedOnboarding) {
       try {
@@ -61,17 +91,17 @@ export default function Profile() {
 
         setProfile((prev) => ({ ...prev, ...updated }));
         setEditForm((prev) => ({ ...prev, ...updated }));
-      } catch (e) {
-        console.error('Failed to parse onboarding data');
+      } catch {
+        // ignore malformed profile JSON
       }
     } else if (storedUsername) {
       setProfile((prev) => ({ ...prev, username: storedUsername }));
       setEditForm((prev) => ({ ...prev, username: storedUsername }));
     }
 
-    // 2. Fetch profile data from backend if available
+    // Fetch backend profile if server is running
     const token = localStorage.getItem('access_token');
-    fetch('http://127.0.0.1:8000/api/dashboard/profile/', {
+    fetch(`${API_BASE_URL}/api/dashboard/profile/`, {
       headers: {
         ...(token && { Authorization: `Bearer ${token}` }),
       },
@@ -89,6 +119,18 @@ export default function Profile() {
             ...backendData,
             username: backendData.username || prev.username,
           }));
+
+          const backendStats = backendData.stats || backendData;
+          setStats({
+            food_entries: Math.max(
+              localCounts.food_entries,
+              Number(backendStats.food_entries) || 0
+            ),
+            activities: Math.max(
+              localCounts.activities,
+              Number(backendStats.activities) || 0
+            ),
+          });
         }
         setLoading(false);
       })
@@ -97,7 +139,6 @@ export default function Profile() {
       });
   }, []);
 
-  // Handle profile picture selection and convert to Base64 for instant preview & storage
   const handleImageChange = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -128,7 +169,6 @@ export default function Profile() {
     setSaving(true);
     setMessage('');
 
-    // 1. Update local state & localStorage immediately
     setProfile(editForm);
     localStorage.setItem('fithub_profile', JSON.stringify(editForm));
     if (editForm.username) {
@@ -137,7 +177,7 @@ export default function Profile() {
 
     try {
       const token = localStorage.getItem('access_token');
-      const response = await fetch('http://127.0.0.1:8000/api/dashboard/profile/', {
+      const response = await fetch(`${API_BASE_URL}/api/dashboard/profile/`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -151,7 +191,7 @@ export default function Profile() {
       } else {
         setMessage('Saved locally (Backend sync pending).');
       }
-    } catch (err) {
+    } catch {
       setMessage('Saved locally (Offline mode).');
     } finally {
       setSaving(false);
@@ -188,7 +228,6 @@ export default function Profile() {
         <div className="lg:col-span-2 space-y-4">
           <div className="bg-slate-800 p-6 rounded-xl border border-slate-700 shadow flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              {/* Clickable Profile Picture / Initials Avatar */}
               <div
                 onClick={() => fileInputRef.current?.click()}
                 title="Click to change profile picture"
@@ -206,7 +245,6 @@ export default function Profile() {
                   </span>
                 )}
 
-                {/* Hover Overlay */}
                 <div className="absolute inset-0 bg-slate-950/70 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-[11px] font-semibold text-white">
                   Change
                 </div>
